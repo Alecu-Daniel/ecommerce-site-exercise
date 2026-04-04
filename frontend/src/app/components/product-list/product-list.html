@@ -1,0 +1,19 @@
+<div class="container mt-4">
+  <h2>Product Catalog</h2>
+  <div class="row">
+    @for (product of products(); track product.productId) {
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5 class="card-title">{{ product.name }}</h5>
+            <p class="card-text">{{ product.description }}</p>
+            <p class="fw-bold">{{ product.price | currency }}</p>
+            <button class="btn btn-primary">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    } @empty {
+      <p>No products available.</p>
+    }
+  </div>
+</div>
