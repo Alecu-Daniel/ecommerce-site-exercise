@@ -1,0 +1,11 @@
+<div class="products-list">
+  @for (product of products(); track product.productId) {
+    <div class="card-container">
+      <p class="price">{{ product.price | currency: 'EUR' }}</p>
+      <p class="name">{{ product.name }}</p>
+      <button class="add-to-cart-button">Add to cart</button>
+    </div>
+  } @empty {
+    <p>No products available.</p>
+  }
+</div>

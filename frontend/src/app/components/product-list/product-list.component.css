@@ -1,0 +1,17 @@
+.products-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  justify-items: center;
+  margin-top: 10px;
+}
+
+.card-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 10px;
+  border: 1px solid #ccc;
+  width: 25%;
+  height: 100%;
+}
