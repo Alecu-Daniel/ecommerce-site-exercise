@@ -1,6 +1,11 @@
 <nav class="nav-container">
   <a class="nav-link" routerLink="/products" routerLinkActive="active">Products</a>
   <a class="nav-link" routerLink="/cart" routerLinkActive="active">Cart ({{ cartCount() }})</a>
-  <a class="nav-link" routerLink="/login" routerLinkActive="active">Login</a>
-  <a class="nav-link" routerLink="/register" routerLinkActive="active">Register</a>
+
+  @if (!authService.currentUserToken()) {
+    <a routerLink="/login">Login</a>
+    <a routerLink="/register">Register</a>
+  } @else {
+    <button (click)="logout()" class="logout-btn">Logout</button>
+  }
 </nav>

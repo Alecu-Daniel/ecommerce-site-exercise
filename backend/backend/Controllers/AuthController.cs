@@ -72,7 +72,13 @@ namespace backend.Controllers
                     {
                         string sqlAddUser = @"INSERT INTO Users([Email]) VALUES (@Email)";
 
-                        _data.ExecuteSqlWithParameters(sqlAddUser, sqlCheckUserParameters);
+                        List<SqlParameter> sqlAddUserParameters = new List<SqlParameter>
+                        {
+                            new SqlParameter("@Email",System.Data.SqlDbType.NVarChar) { Value = userForRegistration.Email}
+                        };
+
+
+                        _data.ExecuteSqlWithParameters(sqlAddUser, sqlAddUserParameters);
 
                         return Ok();
                     }
@@ -114,9 +120,12 @@ namespace backend.Controllers
 
 
             string sqlUserId = "SELECT UserId From Users WHERE Email = @Email";
+            List<SqlParameter> sqlUserIdParameters = new List<SqlParameter>
+            {
+                new SqlParameter("@Email",System.Data.SqlDbType.NVarChar) { Value = userForLogin.Email}
+            };
 
-
-            int userId = _data.LoadDataSingleWithParameters<int>(sqlUserId, sqlHashAndSaltParameters, reader => (int)reader["UserId"]);
+            int userId = _data.LoadDataSingleWithParameters<int>(sqlUserId, sqlUserIdParameters, reader => (int)reader["UserId"]);
 
             return Ok(new Dictionary<string,string>
             {
