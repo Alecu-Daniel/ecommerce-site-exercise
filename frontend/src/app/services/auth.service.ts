@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, resource, signal } from '@angular/core';
+import { inject, Injectable, resource, signal } from '@angular/core';
 import { tap } from 'rxjs';
+import { CartService } from './cart.service';
 
 @Injectable({
   providedIn: 'root',

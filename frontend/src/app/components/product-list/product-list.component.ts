@@ -1,8 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { Product } from '../../models/product.model';
 import { ProductService } from '../../services/product.service';
 import { CommonModule } from '@angular/common';
 import { CartService } from '../../services/cart.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-product-list',
@@ -11,6 +12,8 @@ import { CartService } from '../../services/cart.service';
   styleUrl: './product-list.component.css',
 })
 export class ProductListComponent implements OnInit {
+  private router = inject(Router);
+
   products = signal<Product[]>([]);
 
   constructor(
@@ -28,6 +31,11 @@ export class ProductListComponent implements OnInit {
   }
 
   onAddToCart(product: Product) {
-    this.cartService.addToCart(product);
+    if (!localStorage.getItem('token')) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.cartService.addToCart(product.productId);
   }
 }
