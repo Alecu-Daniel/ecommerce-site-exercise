@@ -1,0 +1,23 @@
+<div class="checkout-container">
+  <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()">
+    <h2>Checkout</h2>
+
+    <div class="input-container">
+      <label for="address">Shipping Address</label>
+      <textarea
+        id="address"
+        formControlName="shippingAddress"
+        placeholder="Enter your full address here..."
+      >
+      </textarea>
+    </div>
+
+    <div class="order-summary">
+      <p>
+        Total to Pay: <strong>{{ total().total | currency: 'EUR' }}</strong>
+      </p>
+    </div>
+
+    <button type="submit" [disabled]="checkoutForm.invalid">Place Order</button>
+  </form>
+</div>

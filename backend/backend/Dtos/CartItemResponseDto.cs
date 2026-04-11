@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
-namespace backend.Dtos
+﻿namespace backend.Dtos
 {
-    public class CartItemResponseDto : Controller
+    public class CartItemResponseDto
     {
         public int ProductId { get; set; }
         public string Title { get; set; } = "";

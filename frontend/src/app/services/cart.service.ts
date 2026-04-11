@@ -3,7 +3,7 @@ import { Product } from '../models/product.model';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from './auth.service';
 import { CartItem } from '../models/cart-item.model';
-import { CartTotalCost } from '../models/cart-total-cost';
+import { CartTotalCost } from '../models/cart-total-cost.model';
 
 @Injectable({
   providedIn: 'root',
