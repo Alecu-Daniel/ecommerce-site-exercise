@@ -1,9 +1,13 @@
 <div class="products-list">
   @for (product of products(); track product.productId) {
     <div class="card-container">
+      <img [src]="product.imageUrl" class="product-img" />
       <p class="price">{{ product.price | currency: 'EUR' }}</p>
       <p class="name">{{ product.name }}</p>
-      <button class="add-to-cart-button" (click)="onAddToCart(product)">Add to cart</button>
+      <button class="add-to-cart-button" (click)="onAddToCart(product)">
+        <ion-icon name="cart" class="cart-icon"></ion-icon>
+        <p class="button-text">Add to cart</p>
+      </button>
     </div>
   } @empty {
     <p>No products available.</p>
