@@ -17,14 +17,15 @@ namespace backend.Controllers
         [HttpGet]
         public IEnumerable<ProductDto> GetProducts()
         {
-            string sql = "SELECT ProductId, Name, Description, Price FROM Products";
+            string sql = "SELECT ProductId, Name, Description, Price, ImageUrl FROM Products";
 
             return _data.LoadDataWithParameters(sql, null, reader => new ProductDto
             {
                 ProductId = (int)reader["ProductId"],
                 Name = reader["Name"].ToString() ?? "",
                 Description = reader["Description"].ToString() ?? "",
-                Price = (decimal)reader["Price"]
+                Price = (decimal)reader["Price"],
+                ImageUrl = reader["ImageUrl"].ToString() ?? ""
             });
         }
     }

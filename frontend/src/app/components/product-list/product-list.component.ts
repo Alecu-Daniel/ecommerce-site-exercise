@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Product } from '../../models/product.model';
 import { ProductService } from '../../services/product.service';
 import { CommonModule } from '@angular/common';
@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
   imports: [CommonModule],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.css',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ProductListComponent implements OnInit {
   private router = inject(Router);
