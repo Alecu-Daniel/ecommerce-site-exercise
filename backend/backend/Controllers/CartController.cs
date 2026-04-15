@@ -1,5 +1,6 @@
 ﻿using backend.DataContext;
 using backend.Dtos;
+using backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -13,9 +14,11 @@ namespace backend.Controllers
     public class CartController : Controller
     {
         private readonly SqlDataContext _data;
-        public CartController(SqlDataContext data)
+        private readonly ICartService _cartService;
+        public CartController(SqlDataContext data, ICartService cartService)
         {
             _data = data;
+            _cartService = cartService;
         }
 
 
@@ -118,12 +121,7 @@ namespace backend.Controllers
                 (decimal)reader["Price"]
             ));
 
-            decimal totalCartCost = 0;
-
-            foreach (var item in cartData)
-            {
-                totalCartCost += item.Price * item.Quantity;
-            }
+            decimal totalCartCost = _cartService.CalculateTotal(cartData);
 
             return new CartTotalDto { Total = totalCartCost };
         }

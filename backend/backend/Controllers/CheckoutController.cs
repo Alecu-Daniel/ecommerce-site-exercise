@@ -1,5 +1,6 @@
 ﻿using backend.DataContext;
 using backend.Dtos;
+using backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -12,10 +13,11 @@ namespace backend.Controllers
     public class CheckoutController : Controller
     {
         private readonly SqlDataContext _data;
-
-        public CheckoutController(SqlDataContext data)
+        private readonly ICartService _cartService;
+        public CheckoutController(SqlDataContext data, ICartService cartService)
         {
             _data = data;
+            _cartService = cartService;
         }
 
         [HttpPost("PlaceOrder")]
@@ -40,11 +42,7 @@ namespace backend.Controllers
 
             if (cartItems.Count == 0) return BadRequest("Cart is empty");
 
-            decimal totalAmount = 0;
-            foreach(var item in cartItems)
-            {
-                totalAmount += item.Quantity * item.Price;
-            }
+            decimal totalAmount = _cartService.CalculateTotal(cartItems.Select(item => (item.Quantity, item.Price)));
 
             string sqlInsertOrder = @"INSERT INTO Orders (UserId, ShippingAddress, TotalAmount) 
                              VALUES (@UserId, @Address, @Total)";
