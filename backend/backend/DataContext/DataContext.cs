@@ -13,7 +13,7 @@ namespace backend.DataContext
         }
 
 
-        public T LoadDataSingleWithParameters<T>(string sql, List<SqlParameter> parameters, Func<SqlDataReader, T> mapper)
+        public T? LoadDataSingleWithParameters<T>(string sql, List<SqlParameter>? parameters, Func<SqlDataReader, T> mapper)
         {
             SqlConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
             SqlCommand commandWithParameters = new SqlCommand(sql, dbConnection);
@@ -30,7 +30,7 @@ namespace backend.DataContext
 
             SqlDataReader reader = commandWithParameters.ExecuteReader();
 
-            T result = default;
+            T? result = default;
 
             if(reader.Read())
             {
@@ -43,7 +43,7 @@ namespace backend.DataContext
             return result;
         }
 
-        public List<T> LoadDataWithParameters<T>(string sql, List<SqlParameter> parameters, Func<SqlDataReader, T> mapper)
+        public List<T> LoadDataWithParameters<T>(string sql, List<SqlParameter>? parameters, Func<SqlDataReader, T> mapper)
         {
             SqlConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
             SqlCommand commandWithParameters = new SqlCommand(sql, dbConnection);
@@ -73,14 +73,17 @@ namespace backend.DataContext
             return results;
         }
 
-        public bool ExecuteSqlWithParameters(string sql, List<SqlParameter> parameters)
+        public bool ExecuteSqlWithParameters(string sql, List<SqlParameter>? parameters)
         {
             SqlConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
             SqlCommand commandWithParameters = new SqlCommand(sql,dbConnection);
 
-            foreach (SqlParameter parameter in parameters)
+            if(parameters != null)
             {
-                commandWithParameters.Parameters.Add(parameter);
+                foreach (SqlParameter parameter in parameters)
+                {
+                    commandWithParameters.Parameters.Add(parameter);
+                }
             }
 
             dbConnection.Open();
