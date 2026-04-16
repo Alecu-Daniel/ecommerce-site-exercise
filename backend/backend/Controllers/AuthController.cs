@@ -101,12 +101,17 @@ namespace backend.Controllers
                 new SqlParameter("@Email",System.Data.SqlDbType.NVarChar) { Value = userForLogin.Email}
             };
 
-            UserForLoginConfirmationDto userForConfirmation = _data.LoadDataSingleWithParameters(sqlForHashAndSalt, sqlHashAndSaltParameters
+            UserForLoginConfirmationDto? userForConfirmation = _data.LoadDataSingleWithParameters(sqlForHashAndSalt, sqlHashAndSaltParameters
                                                                 , reader => new UserForLoginConfirmationDto
                                                                 {
                                                                     PasswordHash = (byte[])reader["PasswordHash"],
                                                                     PasswordSalt = (byte[])reader["PasswordSalt"]
                                                                 });
+
+            if( userForConfirmation == null)
+            {
+                return Unauthorized("Incorrect Email or Password");
+            }
 
             byte[] passwordHash = _authHelper.GetPasswordHash(userForLogin.Password, userForConfirmation.PasswordSalt);
 
