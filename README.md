@@ -26,9 +26,9 @@ This project includes a database backup file (`EcommerceDB.bak`) located in the 
 > `Server=localhost;Database=EcommerceDB;Trusted_Connection=True;TrustServerCertificate=True;`
 
 ### 2. Backend Setup (.NET 9)
-1.  Navigate to the `backend` folder:
+1.  From the root directory, navigate to the backend project folder:
     ```bash
-    cd backend
+    cd backend/backend
     ```
 2.  Restore dependencies:
     ```bash
@@ -42,7 +42,7 @@ This project includes a database backup file (`EcommerceDB.bak`) located in the 
 
 ### 3. Frontend Setup (Angular)
 **Requirements:** Node.js v24.14.0+, Angular CLI 21+.
-1.  Navigate to the `frontend` folder:
+1.  From the root directory, navigate to the frontend folder:
     ```bash
     cd frontend
     ```
@@ -60,7 +60,10 @@ This project includes a database backup file (`EcommerceDB.bak`) located in the 
 
 ## Running Unit Tests
 The project includes a dedicated xUnit test project to validate the **Business Logic** (specifically the independent price calculation on the backend).
-1.  Navigate to the `backend` directory (or root).
+1.  From the root directory, navigate to the solution folder:
+    ```bash
+    cd backend
+    ```
 2.  Run the following command:
     ```bash
     dotnet test
