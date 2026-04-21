@@ -41,7 +41,6 @@ export class CartService {
     this.http.post(`${this.apiUrl}/AddToCart`, { productId, quantity }).subscribe(() => {
       this.getCart();
       this.getCartTotal();
-      alert('Added to cart!');
     });
   }
 

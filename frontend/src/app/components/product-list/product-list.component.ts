@@ -3,24 +3,22 @@ import { Product } from '../../models/product.model';
 import { ProductService } from '../../services/product.service';
 import { CommonModule } from '@angular/common';
 import { CartService } from '../../services/cart.service';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-product-list',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.css',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ProductListComponent implements OnInit {
   private router = inject(Router);
+  private productService = inject(ProductService);
+  private cartService = inject(CartService);
 
   products = signal<Product[]>([]);
-
-  constructor(
-    private productService: ProductService,
-    private cartService: CartService,
-  ) {}
+  showPopup = signal(false);
 
   ngOnInit(): void {
     this.productService.getProducts().subscribe({
@@ -38,5 +36,10 @@ export class ProductListComponent implements OnInit {
     }
 
     this.cartService.addToCart(product.productId);
+    this.showPopup.set(true);
+  }
+
+  closePopup() {
+    this.showPopup.set(false);
   }
 }
