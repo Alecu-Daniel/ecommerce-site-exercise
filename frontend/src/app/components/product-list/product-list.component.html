@@ -1,4 +1,16 @@
 <div class="products-list">
+  @if (showPopup() == true) {
+    <div class="popup">
+      <p>Your product has been added to the cart!</p>
+      <div class="button-container">
+        <button (click)="closePopup()" routerLink="/cart" class="button-view-cart">
+          View Cart
+        </button>
+        <button (click)="closePopup()" class="button-continue-shopping">Continue Shopping</button>
+      </div>
+    </div>
+  }
+
   @for (product of products(); track product.productId) {
     <div class="card-container">
       <img [src]="product.imageUrl" class="product-img" />
