@@ -1,11 +1,29 @@
 <nav class="nav-container">
-  <a class="nav-link" routerLink="/products" routerLinkActive="active">Products</a>
-  <a class="nav-link" routerLink="/cart" routerLinkActive="active">Cart ({{ cartCount() }})</a>
+  <a class="nav-link" routerLink="/products" routerLinkActive="active">
+    <ion-icon name="bag-outline"></ion-icon>
+    Products</a
+  >
+  <a class="nav-link" routerLink="/cart" routerLinkActive="active">
+    <ion-icon name="cart-outline"></ion-icon>
+    Cart ({{ cartCount() }})</a
+  >
 
   @if (!authService.currentUserToken()) {
-    <a routerLink="/login">Login</a>
-    <a routerLink="/register">Register</a>
+    <div class="auth-container">
+      <a routerLink="/login" class="nav-link">
+        <ion-icon name="log-in-outline" class="login-icon"></ion-icon>
+        Login
+      </a>
+
+      <a routerLink="/register" class="nav-link">
+        <ion-icon name="create-outline" class="register-icon"></ion-icon>
+        Register
+      </a>
+    </div>
   } @else {
-    <button (click)="logout()" class="logout-btn">Logout</button>
+    <button (click)="logout()" class="logout-btn">
+      <ion-icon name="log-out-outline"></ion-icon>
+      Logout
+    </button>
   }
 </nav>
