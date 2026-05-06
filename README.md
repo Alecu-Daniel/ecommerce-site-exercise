@@ -58,7 +58,15 @@ This project includes a database backup file (`EcommerceDB.bak`) located in the 
 
 ---
 
-## Running Unit Tests
+### Test Credentials
+To test the application features (Shopping Cart, Checkout) without creating a new account, you can use the following pre-configured user:
+
+* **Email:** `test@mail.com`
+* **Password:** `test`
+
+---
+
+### Running Unit Tests
 The project includes a dedicated xUnit test project to validate the **Business Logic** (specifically the independent price calculation on the backend).
 1.  From the root directory, navigate to the solution folder:
     ```bash
