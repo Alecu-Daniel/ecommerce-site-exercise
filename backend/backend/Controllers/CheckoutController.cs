@@ -21,7 +21,7 @@ namespace backend.Controllers
         }
 
         [HttpPost("PlaceOrder")]
-        public IActionResult PlaceOrder(OrderCreationDto order)
+        public async Task<IActionResult> PlaceOrder(OrderCreationDto order)
         {
             string? userIdClaim = User.FindFirst("userId")?.Value;
             if(string.IsNullOrEmpty(userIdClaim)) return Unauthorized();
@@ -33,12 +33,13 @@ namespace backend.Controllers
                                   WHERE ci.UserId = @UserId";
 
             List<SqlParameter> getCartParameters = new List<SqlParameter>() { new SqlParameter("UserId", System.Data.SqlDbType.Int) {Value = userId} };
-            var cartItems = _data.LoadDataWithParameters(sqlGetCart, getCartParameters, reader => new { 
-            
+            var cartItems = await _data.LoadDataWithParametersAsync(sqlGetCart, getCartParameters, reader => new
+            {
+
                 ProductId = (int)reader["ProductId"],
                 Quantity = (int)reader["Quantity"],
                 Price = (decimal)reader["Price"]
-            }).ToList();
+            });
 
             if (cartItems.Count == 0) return BadRequest("Cart is empty");
 
@@ -54,11 +55,11 @@ namespace backend.Controllers
                 new SqlParameter("Total",System.Data.SqlDbType.Decimal) {Value = totalAmount},
             };
 
-            _data.ExecuteSqlWithParameters(sqlInsertOrder, insertOrderParameters);
+            await _data.ExecuteSqlWithParametersAsync(sqlInsertOrder, insertOrderParameters);
 
             string sqlGetOrderId = "SELECT MAX(OrderId) as OrderId FROM Orders WHERE UserId = @UserId";
             List<SqlParameter> getOrderIdParameters = new List<SqlParameter> { new SqlParameter("UserId", System.Data.SqlDbType.Int) { Value = userId } };
-            int orderId = _data.LoadDataSingleWithParameters(sqlGetOrderId, getOrderIdParameters, reader => (int)reader["OrderId"]);
+            int orderId = await _data.LoadDataSingleWithParametersAsync(sqlGetOrderId, getOrderIdParameters, reader => (int)reader["OrderId"]);
 
 
 
@@ -72,12 +73,12 @@ namespace backend.Controllers
                     new SqlParameter("Quantity", System.Data.SqlDbType.Int) { Value = item.Quantity},
                     new SqlParameter("Price", System.Data.SqlDbType.Decimal) { Value = item.Price}
                 };
-                _data.ExecuteSqlWithParameters(sqlInsertOrderItem, insertOrderItemParameters);
+                await _data.ExecuteSqlWithParametersAsync(sqlInsertOrderItem, insertOrderItemParameters);
             }
 
             string sqlClearCart = "DELETE FROM CartItems WHERE UserId = @UserId";
             List<SqlParameter> clearCartParameters = new List<SqlParameter> {new SqlParameter("UserId",System.Data.SqlDbType.Int) {Value = userId} };
-            _data.ExecuteSqlWithParameters(sqlClearCart, clearCartParameters);
+            await _data.ExecuteSqlWithParametersAsync(sqlClearCart, clearCartParameters);
 
             return Ok(new { message = "Order placed successfully" });
         }

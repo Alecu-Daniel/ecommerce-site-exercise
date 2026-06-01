@@ -15,11 +15,11 @@ namespace backend.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<ProductDto> GetProducts()
+        public async Task<IEnumerable<ProductDto>> GetProducts()
         {
             string sql = "SELECT ProductId, Name, Description, Price, ImageUrl FROM Products";
 
-            return _data.LoadDataWithParameters(sql, null, reader => new ProductDto
+            return await _data.LoadDataWithParametersAsync(sql, null, reader => new ProductDto
             {
                 ProductId = (int)reader["ProductId"],
                 Name = reader["Name"].ToString() ?? "",

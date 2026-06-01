@@ -23,7 +23,7 @@ namespace backend.Controllers
 
 
         [HttpPost("AddToCart")]
-        public IActionResult AddToCart(CartItemUpsertDto cartItem)
+        public async Task<IActionResult> AddToCart(CartItemUpsertDto cartItem)
         {
             string? userIdClaim = User.FindFirst("userId")?.Value;
             if (string.IsNullOrEmpty(userIdClaim)) return Unauthorized();
@@ -37,7 +37,7 @@ namespace backend.Controllers
                 new SqlParameter("ProductId",System.Data.SqlDbType.Int) { Value = cartItem.ProductId}
             };
 
-            IEnumerable<int> existingProduct = _data.LoadDataWithParameters<int>(sqlcheckIfProductInCart, checkProductParameters, reader => (int)reader["ProductId"]);
+            IEnumerable<int> existingProduct = await _data.LoadDataWithParametersAsync<int>(sqlcheckIfProductInCart, checkProductParameters, reader => (int)reader["ProductId"]);
 
             if (existingProduct.Count() >= 1)
             {
@@ -51,7 +51,7 @@ namespace backend.Controllers
                     new SqlParameter("UserId",System.Data.SqlDbType.Int) {Value = userId}
                 };
 
-                _data.ExecuteSqlWithParameters(sqlUpdateProduct, updateProductParameters);
+                await _data.ExecuteSqlWithParametersAsync(sqlUpdateProduct, updateProductParameters);
 
                 return Ok();
             }
@@ -65,7 +65,7 @@ namespace backend.Controllers
                     new SqlParameter("Quantity",System.Data.SqlDbType.Int) {Value = cartItem.Quantity}
                 };
 
-                _data.ExecuteSqlWithParameters(sqlInsertProduct, insertProductParameters);
+                await _data.ExecuteSqlWithParametersAsync(sqlInsertProduct, insertProductParameters);
                 return Ok();
             }
 
@@ -75,7 +75,7 @@ namespace backend.Controllers
 
 
         [HttpGet("GetCart")]
-        public IEnumerable<CartItemResponseDto> GetCart()
+        public async Task<IEnumerable<CartItemResponseDto>> GetCart()
         {
             string? userIdClaim = User.FindFirst("userId")?.Value;
             if (string.IsNullOrEmpty(userIdClaim)) throw new Exception("Failed to display cart");
@@ -90,7 +90,7 @@ namespace backend.Controllers
                 new SqlParameter("UserId",System.Data.SqlDbType.Int) {Value = userId}
             };
 
-            return _data.LoadDataWithParameters(getAllCartProducts, allCartProductsParameters, reader => new CartItemResponseDto
+            return await _data.LoadDataWithParametersAsync(getAllCartProducts, allCartProductsParameters, reader => new CartItemResponseDto
             {
                 ProductId = (int)reader["ProductId"],
                 Quantity = (int)reader["Quantity"],
@@ -100,7 +100,7 @@ namespace backend.Controllers
         }
 
         [HttpGet("GetTotal")]
-        public CartTotalDto GetTotal()
+        public async Task<CartTotalDto> GetTotal()
         {
             string? userIdClaim = User.FindFirst("userId")?.Value;
             if (string.IsNullOrEmpty(userIdClaim)) throw new Exception("Failed to calculate cart total");
@@ -115,7 +115,7 @@ namespace backend.Controllers
                 new SqlParameter("UserId", System.Data.SqlDbType.Int) { Value = userId }
             };
 
-            IEnumerable<(int Quantity, decimal Price)> cartData = _data.LoadDataWithParameters(sqlGetUsersProducts, usersProductsParameters, reader => (
+            IEnumerable<(int Quantity, decimal Price)> cartData = await _data.LoadDataWithParametersAsync(sqlGetUsersProducts, usersProductsParameters, reader => (
 
                 (int)reader["Quantity"],
                 (decimal)reader["Price"]
@@ -127,7 +127,7 @@ namespace backend.Controllers
         }
 
         [HttpDelete("RemoveItem/{productId}")]
-        public IActionResult RemoveItem(int productId)
+        public async Task<IActionResult> RemoveItem(int productId)
         {
             string? userIdClaim = User.FindFirst("userId")?.Value;
             if (string.IsNullOrEmpty(userIdClaim)) return Unauthorized();
@@ -140,7 +140,7 @@ namespace backend.Controllers
                 new SqlParameter("ProductId", System.Data.SqlDbType.Int) { Value = productId }
             };
 
-            if (_data.ExecuteSqlWithParameters(sqlDeleteItem, deleteItemsParameters))
+            if (await _data.ExecuteSqlWithParametersAsync(sqlDeleteItem, deleteItemsParameters))
                 return Ok();
             else throw new Exception("Failed to remove item");
 
