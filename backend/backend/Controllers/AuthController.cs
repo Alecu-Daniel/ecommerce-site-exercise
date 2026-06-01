@@ -32,7 +32,7 @@ namespace backend.Controllers
 
         [AllowAnonymous]
         [HttpPost("Register")]
-        public IActionResult Register(UserForRegistrationDto userForRegistration)
+        public async Task<IActionResult> Register(UserForRegistrationDto userForRegistration)
         {
             if (userForRegistration.Password == userForRegistration.PasswordConfirm)
             {
@@ -44,7 +44,7 @@ namespace backend.Controllers
                 };
 
 
-                IEnumerable<string> existingUsers = _data.LoadDataWithParameters<string>(sqlCheckUserExists, sqlCheckUserParameters, reader => reader["Email"].ToString() ?? "");
+                IEnumerable<string> existingUsers = await _data.LoadDataWithParametersAsync<string>(sqlCheckUserExists, sqlCheckUserParameters, reader => reader["Email"].ToString() ?? "");
 
                 if (existingUsers.Count() == 0)
                 {
@@ -68,7 +68,7 @@ namespace backend.Controllers
                         new SqlParameter("@PasswordSalt",System.Data.SqlDbType.VarBinary) { Value = passwordSalt}
                     };
 
-                    if(_data.ExecuteSqlWithParameters(sqlAddAuth,sqlAddAuthParameters))
+                    if(await _data.ExecuteSqlWithParametersAsync(sqlAddAuth,sqlAddAuthParameters))
                     {
                         string sqlAddUser = @"INSERT INTO Users([Email]) VALUES (@Email)";
 
@@ -78,7 +78,7 @@ namespace backend.Controllers
                         };
 
 
-                        _data.ExecuteSqlWithParameters(sqlAddUser, sqlAddUserParameters);
+                        await _data.ExecuteSqlWithParametersAsync(sqlAddUser, sqlAddUserParameters);
 
                         return Ok();
                     }
@@ -93,7 +93,7 @@ namespace backend.Controllers
 
         [AllowAnonymous]
         [HttpPost("Login")]
-        public IActionResult Login(UserForLoginDto userForLogin)
+        public async Task<IActionResult> Login(UserForLoginDto userForLogin)
         {
             string sqlForHashAndSalt = @"SELECT [PasswordHash],[PasswordSalt] FROM Auth WHERE Email = @Email";
             List<SqlParameter> sqlHashAndSaltParameters = new List<SqlParameter>
@@ -101,7 +101,7 @@ namespace backend.Controllers
                 new SqlParameter("@Email",System.Data.SqlDbType.NVarChar) { Value = userForLogin.Email}
             };
 
-            UserForLoginConfirmationDto? userForConfirmation = _data.LoadDataSingleWithParameters(sqlForHashAndSalt, sqlHashAndSaltParameters
+            UserForLoginConfirmationDto? userForConfirmation = await _data.LoadDataSingleWithParametersAsync(sqlForHashAndSalt, sqlHashAndSaltParameters
                                                                 , reader => new UserForLoginConfirmationDto
                                                                 {
                                                                     PasswordHash = (byte[])reader["PasswordHash"],
@@ -130,7 +130,7 @@ namespace backend.Controllers
                 new SqlParameter("@Email",System.Data.SqlDbType.NVarChar) { Value = userForLogin.Email}
             };
 
-            int userId = _data.LoadDataSingleWithParameters<int>(sqlUserId, sqlUserIdParameters, reader => (int)reader["UserId"]);
+            int userId = await _data.LoadDataSingleWithParametersAsync<int>(sqlUserId, sqlUserIdParameters, reader => (int)reader["UserId"]);
 
             return Ok(new Dictionary<string,string>
             {

@@ -13,7 +13,7 @@ namespace backend.DataContext
         }
 
 
-        public T? LoadDataSingleWithParameters<T>(string sql, List<SqlParameter>? parameters, Func<SqlDataReader, T> mapper)
+        public async Task<T?> LoadDataSingleWithParametersAsync<T>(string sql, List<SqlParameter>? parameters, Func<SqlDataReader, T> mapper)
         {
             using SqlConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
             using SqlCommand commandWithParameters = new SqlCommand(sql, dbConnection);
@@ -26,13 +26,13 @@ namespace backend.DataContext
                 }
             }
 
-            dbConnection.Open();
+            await dbConnection.OpenAsync();
 
-            using SqlDataReader reader = commandWithParameters.ExecuteReader();
+            using SqlDataReader reader = await commandWithParameters.ExecuteReaderAsync();
 
             T? result = default;
 
-            if(reader.Read())
+            if(await reader.ReadAsync())
             {
                 result = mapper(reader);
             }
@@ -40,7 +40,7 @@ namespace backend.DataContext
             return result;
         }
 
-        public List<T> LoadDataWithParameters<T>(string sql, List<SqlParameter>? parameters, Func<SqlDataReader, T> mapper)
+        public async Task<List<T>> LoadDataWithParametersAsync<T>(string sql, List<SqlParameter>? parameters, Func<SqlDataReader, T> mapper)
         {
             using SqlConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
             using SqlCommand commandWithParameters = new SqlCommand(sql, dbConnection);
@@ -53,13 +53,13 @@ namespace backend.DataContext
                 }
             }
 
-            dbConnection.Open();
+            await dbConnection.OpenAsync();
 
-            using SqlDataReader reader = commandWithParameters.ExecuteReader();
+            using SqlDataReader reader = await commandWithParameters.ExecuteReaderAsync();
 
             List<T> results = new List<T>();
 
-            while (reader.Read())
+            while (await reader.ReadAsync())
             {
                 results.Add(mapper(reader));
             }
@@ -67,7 +67,7 @@ namespace backend.DataContext
             return results;
         }
 
-        public bool ExecuteSqlWithParameters(string sql, List<SqlParameter>? parameters)
+        public async Task<bool> ExecuteSqlWithParametersAsync(string sql, List<SqlParameter>? parameters)
         {
             using SqlConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
             using SqlCommand commandWithParameters = new SqlCommand(sql,dbConnection);
@@ -80,9 +80,9 @@ namespace backend.DataContext
                 }
             }
 
-            dbConnection.Open();
+            await dbConnection.OpenAsync();
 
-            int rowsAffected = commandWithParameters.ExecuteNonQuery();
+            int rowsAffected = await commandWithParameters.ExecuteNonQueryAsync();
 
             return rowsAffected > 0;
 
