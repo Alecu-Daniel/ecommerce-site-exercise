@@ -15,8 +15,8 @@ namespace backend.DataContext
 
         public T? LoadDataSingleWithParameters<T>(string sql, List<SqlParameter>? parameters, Func<SqlDataReader, T> mapper)
         {
-            SqlConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
-            SqlCommand commandWithParameters = new SqlCommand(sql, dbConnection);
+            using SqlConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+            using SqlCommand commandWithParameters = new SqlCommand(sql, dbConnection);
 
             if (parameters != null)
             {
@@ -28,7 +28,7 @@ namespace backend.DataContext
 
             dbConnection.Open();
 
-            SqlDataReader reader = commandWithParameters.ExecuteReader();
+            using SqlDataReader reader = commandWithParameters.ExecuteReader();
 
             T? result = default;
 
@@ -37,16 +37,13 @@ namespace backend.DataContext
                 result = mapper(reader);
             }
 
-            reader.Close();
-            dbConnection.Close();
-
             return result;
         }
 
         public List<T> LoadDataWithParameters<T>(string sql, List<SqlParameter>? parameters, Func<SqlDataReader, T> mapper)
         {
-            SqlConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
-            SqlCommand commandWithParameters = new SqlCommand(sql, dbConnection);
+            using SqlConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+            using SqlCommand commandWithParameters = new SqlCommand(sql, dbConnection);
 
             if(parameters != null)
             {
@@ -58,7 +55,7 @@ namespace backend.DataContext
 
             dbConnection.Open();
 
-            SqlDataReader reader = commandWithParameters.ExecuteReader();
+            using SqlDataReader reader = commandWithParameters.ExecuteReader();
 
             List<T> results = new List<T>();
 
@@ -66,17 +63,14 @@ namespace backend.DataContext
             {
                 results.Add(mapper(reader));
             }
-
-            reader.Close();
-            dbConnection.Close();
             
             return results;
         }
 
         public bool ExecuteSqlWithParameters(string sql, List<SqlParameter>? parameters)
         {
-            SqlConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
-            SqlCommand commandWithParameters = new SqlCommand(sql,dbConnection);
+            using SqlConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+            using SqlCommand commandWithParameters = new SqlCommand(sql,dbConnection);
 
             if(parameters != null)
             {
@@ -89,8 +83,6 @@ namespace backend.DataContext
             dbConnection.Open();
 
             int rowsAffected = commandWithParameters.ExecuteNonQuery();
-
-            dbConnection.Close();
 
             return rowsAffected > 0;
 
