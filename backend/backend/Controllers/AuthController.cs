@@ -2,6 +2,7 @@
 using backend.Dtos;
 using backend.Helpers;
 using backend.Models;
+using backend.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +14,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.RateLimiting;
+using backend.Services.Interfaces;
 
 namespace backend.Controllers
 {
@@ -21,12 +23,12 @@ namespace backend.Controllers
     [Route("api/[controller]")]
     public class AuthController : Controller
     {
-        private readonly SqlDataContext _data;
-        private readonly AuthHelper _authHelper;
-        public AuthController(SqlDataContext data,AuthHelper authHelper)
+        private readonly IAuthService _authService;
+        private readonly ILogger<AuthController> _logger;
+        public AuthController(IAuthService authService, ILogger<AuthController> logger)
         {
-            _data = data;
-            _authHelper = authHelper;
+            _authService = authService;
+            _logger = logger;
         }
 
 
@@ -34,60 +36,24 @@ namespace backend.Controllers
         [HttpPost("Register")]
         public async Task<IActionResult> Register(UserForRegistrationDto userForRegistration)
         {
-            if (userForRegistration.Password == userForRegistration.PasswordConfirm)
+            if (userForRegistration.Password != userForRegistration.PasswordConfirm)
             {
-                string sqlCheckUserExists = "SELECT * FROM Auth WHERE Email = @Email";
-
-                List<SqlParameter> sqlCheckUserParameters = new List<SqlParameter>
-                {
-                    new SqlParameter("@Email",System.Data.SqlDbType.NVarChar) { Value = userForRegistration.Email}
-                };
-
-
-                IEnumerable<string> existingUsers = await _data.LoadDataWithParametersAsync<string>(sqlCheckUserExists, sqlCheckUserParameters, reader => reader["Email"].ToString() ?? "");
-
-                if (existingUsers.Count() == 0)
-                {
-                    byte[] passwordSalt = new byte[128 / 8];
-
-                    using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
-                    {
-                        rng.GetNonZeroBytes(passwordSalt);
-                    }
-
-                    byte[] passwordHash = _authHelper.GetPasswordHash(userForRegistration.Password, passwordSalt);
-
-                    string sqlAddAuth = @"INSERT INTO Auth ([Email],[PasswordHash],[PasswordSalt])
-                                          VALUES (@Email, @PasswordHash, @PasswordSalt)";
-
-
-                    List<SqlParameter> sqlAddAuthParameters = new List<SqlParameter>
-                    {
-                        new SqlParameter("@Email",System.Data.SqlDbType.NVarChar) { Value = userForRegistration.Email},
-                        new SqlParameter("@PasswordHash",System.Data.SqlDbType.VarBinary) { Value = passwordHash},
-                        new SqlParameter("@PasswordSalt",System.Data.SqlDbType.VarBinary) { Value = passwordSalt}
-                    };
-
-                    if(await _data.ExecuteSqlWithParametersAsync(sqlAddAuth,sqlAddAuthParameters))
-                    {
-                        string sqlAddUser = @"INSERT INTO Users([Email]) VALUES (@Email)";
-
-                        List<SqlParameter> sqlAddUserParameters = new List<SqlParameter>
-                        {
-                            new SqlParameter("@Email",System.Data.SqlDbType.NVarChar) { Value = userForRegistration.Email}
-                        };
-
-
-                        await _data.ExecuteSqlWithParametersAsync(sqlAddUser, sqlAddUserParameters);
-
-                        return Ok();
-                    }
-                    throw new Exception("Failed to register user.");
-                }
-                throw new Exception("User with this Email already exists");
-
+                return BadRequest("Passwords do not match.");
             }
-            throw new Exception("Passwords do not match");
+
+            try
+            {
+                var success = await _authService.RegisterAsync(userForRegistration);
+                if (!success) return BadRequest("An account with that email already exists");
+
+                _logger.LogInformation("Successfully registered a new user account profile for {Email}.", userForRegistration.Email);
+                return Ok(new { message = "User registered successfully." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected exception thrown during execution route for user {Email}", userForRegistration.Email);
+                return StatusCode(500, "An internal error occurred while processing your registration.");
+            }
         }
 
 
@@ -95,47 +61,27 @@ namespace backend.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login(UserForLoginDto userForLogin)
         {
-            string sqlForHashAndSalt = @"SELECT [PasswordHash],[PasswordSalt] FROM Auth WHERE Email = @Email";
-            List<SqlParameter> sqlHashAndSaltParameters = new List<SqlParameter>
+            try
             {
-                new SqlParameter("@Email",System.Data.SqlDbType.NVarChar) { Value = userForLogin.Email}
-            };
-
-            UserForLoginConfirmationDto? userForConfirmation = await _data.LoadDataSingleWithParametersAsync(sqlForHashAndSalt, sqlHashAndSaltParameters
-                                                                , reader => new UserForLoginConfirmationDto
-                                                                {
-                                                                    PasswordHash = (byte[])reader["PasswordHash"],
-                                                                    PasswordSalt = (byte[])reader["PasswordSalt"]
-                                                                });
-
-            if( userForConfirmation == null)
-            {
-                return Unauthorized("Incorrect Email or Password");
-            }
-
-            byte[] passwordHash = _authHelper.GetPasswordHash(userForLogin.Password, userForConfirmation.PasswordSalt);
-
-            for(int i = 0; i < passwordHash.Length;i++)
-            {
-                if (passwordHash[i] != userForConfirmation.PasswordHash[i])
+                string? token = await _authService.LoginAsync(userForLogin);
+                if (token == null)
                 {
-                    throw new Exception("Incorrect Password");
+                    return Unauthorized("Incorrect Email or Password");
                 }
+
+                _logger.LogInformation("Account {Email} successfully passed identity validation checks.", userForLogin.Email);
+
+                return Ok(new Dictionary<string, string>
+                {
+                    { "token", token }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An unexpected error occurred during user login for email {Email}", userForLogin.Email);
+                return StatusCode(500, "An internal error occurred while processing your login.");
             }
 
-
-            string sqlUserId = "SELECT UserId From Users WHERE Email = @Email";
-            List<SqlParameter> sqlUserIdParameters = new List<SqlParameter>
-            {
-                new SqlParameter("@Email",System.Data.SqlDbType.NVarChar) { Value = userForLogin.Email}
-            };
-
-            int userId = await _data.LoadDataSingleWithParametersAsync<int>(sqlUserId, sqlUserIdParameters, reader => (int)reader["UserId"]);
-
-            return Ok(new Dictionary<string,string>
-            {
-                {"token", _authHelper.CreateToken(userId) }
-            });
         }
 
 
